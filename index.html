@@ -460,6 +460,54 @@
         <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-purple)"></span>Presiune atmosferică (mbar)</div>
         <div class="chart-wrap medium"><canvas id="chart-pres"></canvas></div>
       </div>
+
+      <!-- SEM ENVELOPE CHART -->
+      <div class="chart-full" style="border-color: rgba(0,212,255,0.3);">
+        <div class="chart-title">
+          <span class="chart-title-dot" style="background:linear-gradient(135deg,#00d4ff,#a78bfa)"></span>
+          Anvelopă SEM — Incertitudinea Măsurătorilor (medie ± SEM per zi)
+          <span style="margin-left:auto;font-size:9px;color:#5a7a9a;font-style:italic;">
+            Banda colorată = ±1 SEM · Linia continuă = media zilnică · SEM mai mare → incertitudine mai mare (n mai mic)
+          </span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="sem-metric-btns">
+          <button class="map-btn active" onclick="renderSemChart('rad')"   data-sem="rad">Radiație (μSv/h)</button>
+          <button class="map-btn"        onclick="renderSemChart('voc')"   data-sem="voc">VOC (ppm)</button>
+          <button class="map-btn"        onclick="renderSemChart('aqs')"   data-sem="aqs">AQS</button>
+          <button class="map-btn"        onclick="renderSemChart('temp')"  data-sem="temp">Temperatură (°C)</button>
+          <button class="map-btn"        onclick="renderSemChart('hum')"   data-sem="hum">Umiditate (%)</button>
+          <button class="map-btn"        onclick="renderSemChart('pres')"  data-sem="pres">Presiune (mbar)</button>
+          <button class="map-btn"        onclick="renderSemChart('pm25')"  data-sem="pm25">PM2.5 (μg/m³)</button>
+          <button class="map-btn"        onclick="renderSemChart('pm10')"  data-sem="pm10">PM10 (μg/m³)</button>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chart-sem-env"></canvas></div>
+        <div id="sem-stats-row" style="display:flex;gap:24px;flex-wrap:wrap;margin-top:14px;padding:10px 4px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--text-dim);"></div>
+      </div>
+
+      <!-- BOX PLOT CHART -->
+      <div class="chart-full" style="border-color:rgba(167,139,250,0.3);">
+        <div class="chart-title">
+          <span class="chart-title-dot" style="background:linear-gradient(135deg,#a78bfa,#ff4d6d)"></span>
+          Box Plot — Distribuția completă a valorilor per zi (date GPS brute)
+          <span style="margin-left:auto;font-size:9px;color:#5a7a9a;font-style:italic;">
+            Cutie = Q1–Q3 · Linie = mediană · Mustăți = 1.5×IQR · Puncte = outlieri
+          </span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="box-metric-btns">
+          <button class="map-btn active" onclick="renderBoxPlot('rad')"  data-box="rad">Radiație (μSv/h)</button>
+          <button class="map-btn"        onclick="renderBoxPlot('cpm')"  data-box="cpm">CPM</button>
+          <button class="map-btn"        onclick="renderBoxPlot('pm25')" data-box="pm25">PM2.5 (μg/m³)</button>
+          <button class="map-btn"        onclick="renderBoxPlot('pm10')" data-box="pm10">PM10 (μg/m³)</button>
+          <button class="map-btn"        onclick="renderBoxPlot('pm1')"  data-box="pm1">PM1 (μg/m³)</button>
+          <button class="map-btn"        onclick="renderBoxPlot('aqs')"  data-box="aqs">AQS</button>
+          <button class="map-btn"        onclick="renderBoxPlot('temp')" data-box="temp">Temperatură (°C)</button>
+        </div>
+        <div style="position:relative;height:360px;overflow-x:auto;overflow-y:hidden;">
+          <canvas id="chart-boxplot" style="display:block;"></canvas>
+        </div>
+        <div id="box-stats-row" style="display:flex;gap:24px;flex-wrap:wrap;margin-top:14px;padding:10px 4px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--text-dim);"></div>
+      </div>
+
     </div>
   </div>
 
@@ -545,7 +593,7 @@
 // ═══════════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════════
-const DAILY = [{"date":"09.03.2026","n":147,"rad":0.0457,"cpm":6.9,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"10.03.2026","n":7,"rad":0.0407,"cpm":6.12,"voc":0.0141,"aqs":95.4,"temp":17.7,"hum":28.1,"pres":1025.3,"pm1":10.74,"pm25":12.74,"pm10":13.93},{"date":"11.03.2026","n":11,"rad":0.0602,"cpm":9.09,"voc":0.0073,"aqs":95.1,"temp":16.6,"hum":28.2,"pres":1022.6,"pm1":7.81,"pm25":9.9,"pm10":11.37},{"date":"12.03.2026","n":19,"rad":0.0345,"cpm":5.21,"voc":0.0066,"aqs":92.1,"temp":15.8,"hum":35.9,"pres":1019.5,"pm1":24.37,"pm25":28.17,"pm10":30.7},{"date":"15.03.2026","n":42,"rad":0.0404,"cpm":6.1,"voc":0.0116,"aqs":98.9,"temp":22.0,"hum":38.1,"pres":1011.7,"pm1":null,"pm25":null,"pm10":null},{"date":"16.03.2026","n":0,"rad":null,"cpm":null,"voc":0.0036,"aqs":94.0,"temp":10.8,"hum":38.7,"pres":1013.0,"pm1":27.67,"pm25":30.87,"pm10":31.8},{"date":"17.03.2026","n":13,"rad":0.0525,"cpm":7.92,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"18.03.2026","n":10,"rad":0.0417,"cpm":6.3,"voc":0.0,"aqs":92.5,"temp":17.2,"hum":30.1,"pres":1018.5,"pm1":5.39,"pm25":null,"pm10":null},{"date":"25.03.2026","n":14,"rad":0.0393,"cpm":5.93,"voc":0.0,"aqs":93.2,"temp":17.6,"hum":30.8,"pres":1008.2,"pm1":35.8,"pm25":39.2,"pm10":40.2},{"date":"27.03.2026","n":0,"rad":null,"cpm":null,"voc":0.4269,"aqs":74.8,"temp":20.6,"hum":43.9,"pres":1004.8,"pm1":5.59,"pm25":7.41,"pm10":8.51},{"date":"28.03.2026","n":0,"rad":null,"cpm":null,"voc":0.2403,"aqs":84.8,"temp":21.8,"hum":44.1,"pres":998.7,"pm1":6.75,"pm25":8.57,"pm10":9.96},{"date":"29.03.2026","n":0,"rad":null,"cpm":null,"voc":0.1958,"aqs":86.7,"temp":21.5,"hum":42.1,"pres":995.7,"pm1":4.53,"pm25":6.07,"pm10":7.65},{"date":"30.03.2026","n":19,"rad":0.0375,"cpm":5.66,"voc":0.0638,"aqs":96.0,"temp":22.2,"hum":49.5,"pres":1015.7,"pm1":1.9,"pm25":3.1,"pm10":4.15},{"date":"31.03.2026","n":147,"rad":0.0456,"cpm":6.89,"voc":0.0259,"aqs":74.7,"temp":15.5,"hum":59.9,"pres":1003.7,"pm1":17.3,"pm25":20.61,"pm10":22.83},{"date":"01.04.2026","n":62,"rad":0.0397,"cpm":6.0,"voc":0.5031,"aqs":64.4,"temp":12.4,"hum":58.1,"pres":1009.6,"pm1":23.36,"pm25":26.16,"pm10":27.09},{"date":"06.04.2026","n":97,"rad":0.0409,"cpm":6.18,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"07.04.2026","n":10,"rad":0.047,"cpm":7.1,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"20.04.2026","n":38,"rad":0.0383,"cpm":5.79,"voc":0.0033,"aqs":95.9,"temp":19.3,"hum":38.7,"pres":1005.1,"pm1":11.51,"pm25":14.75,"pm10":17.1},{"date":"21.04.2026","n":13,"rad":0.0352,"cpm":5.31,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"22.04.2026","n":12,"rad":0.0375,"cpm":5.67,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"23.04.2026","n":30,"rad":0.0402,"cpm":6.07,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null},{"date":"27.04.2026","n":20,"rad":0.0427,"cpm":6.45,"voc":0.0034,"aqs":98.3,"temp":14.4,"hum":30.4,"pres":1019.9,"pm1":1.75,"pm25":3.32,"pm10":4.89},{"date":"29.04.2026","n":0,"rad":null,"cpm":null,"voc":null,"aqs":null,"temp":null,"hum":null,"pres":null,"pm1":null,"pm25":null,"pm10":null}];
+const DAILY = [{"date": "09.03.2026", "n": 147, "rad": 0.0457, "rad_sem": 0.0045, "rad_n": 147, "cpm": 6.898, "cpm_sem": 0.6837, "cpm_n": 147, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "10.03.2026", "n": 30, "rad": 0.0407, "rad_sem": 0.0121, "rad_n": 7, "cpm": 6.125, "cpm_sem": 1.5807, "cpm_n": 8, "voc": 0.0141, "voc_sem": 0.005, "voc_n": 30, "aqs": 95.4, "aqs_sem": 1.1302, "aqs_n": 30, "temp": 17.7333, "temp_sem": 0.5968, "temp_n": 30, "hum": 28.1, "hum_sem": 0.7736, "hum_n": 30, "pres": 1025.3267, "pres_sem": 0.069, "pres_n": 30, "pm1": 10.7429, "pm1_sem": 0.9317, "pm1_n": 7, "pm25": 12.7429, "pm25_sem": 0.9646, "pm25_n": 7, "pm10": 13.9286, "pm10_sem": 0.9913, "pm10_n": 7}, {"date": "11.03.2026", "n": 20, "rad": 0.0602, "rad_sem": 0.0184, "rad_n": 11, "cpm": 9.0909, "cpm_sem": 2.7747, "cpm_n": 11, "voc": 0.0073, "voc_sem": 0.0031, "voc_n": 20, "aqs": 95.1, "aqs_sem": 1.1213, "aqs_n": 20, "temp": 16.55, "temp_sem": 0.7089, "temp_n": 20, "hum": 28.25, "hum_sem": 0.8268, "hum_n": 20, "pres": 1022.5632, "pres_sem": 0.0384, "pres_n": 19, "pm1": 7.8143, "pm1_sem": 0.6247, "pm1_n": 7, "pm25": 9.9, "pm25_sem": 0.487, "pm25_n": 7, "pm10": 11.3714, "pm10_sem": 0.3577, "pm10_n": 7}, {"date": "12.03.2026", "n": 33, "rad": 0.0345, "rad_sem": 0.0046, "rad_n": 19, "cpm": 5.2105, "cpm_sem": 0.6907, "cpm_n": 19, "voc": 0.0066, "voc_sem": 0.0042, "voc_n": 33, "aqs": 92.0909, "aqs_sem": 2.6708, "aqs_n": 33, "temp": 15.8485, "temp_sem": 0.4809, "temp_n": 33, "hum": 35.9091, "hum_sem": 0.9528, "hum_n": 33, "pres": 1019.503, "pres_sem": 0.3124, "pres_n": 33, "pm1": 24.3667, "pm1_sem": 6.3816, "pm1_n": 9, "pm25": 28.1667, "pm25_sem": 6.7667, "pm25_n": 9, "pm10": 30.7, "pm10_sem": 6.7709, "pm10_n": 9}, {"date": "15.03.2026", "n": 42, "rad": 0.0404, "rad_sem": 0.0027, "rad_n": 42, "cpm": 6.0952, "cpm_sem": 0.4058, "cpm_n": 42, "voc": 0.0116, "voc_sem": 0.0036, "voc_n": 42, "aqs": 98.881, "aqs_sem": 0.2266, "aqs_n": 42, "temp": 22.0488, "temp_sem": 0.1207, "temp_n": 41, "hum": 38.0976, "hum_sem": 0.2513, "hum_n": 41, "pres": 1011.7214, "pres_sem": 0.0154, "pres_n": 42, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "16.03.2026", "n": 18, "rad": null, "rad_sem": null, "rad_n": 0, "cpm": null, "cpm_sem": null, "cpm_n": 0, "voc": 0.0036, "voc_sem": 0.0011, "voc_n": 18, "aqs": 94.0, "aqs_sem": 2.9836, "aqs_n": 18, "temp": 10.7778, "temp_sem": 0.9516, "temp_n": 18, "hum": 38.7222, "hum_sem": 1.7486, "hum_n": 18, "pres": 1012.9556, "pres_sem": 0.0326, "pres_n": 18, "pm1": 27.6667, "pm1_sem": 5.3778, "pm1_n": 3, "pm25": 30.8667, "pm25_sem": 5.8288, "pm25_n": 3, "pm10": 31.8, "pm10_sem": 5.9657, "pm10_n": 3}, {"date": "17.03.2026", "n": 13, "rad": 0.0525, "rad_sem": 0.0081, "rad_n": 13, "cpm": 7.9231, "cpm_sem": 1.2272, "cpm_n": 13, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "18.03.2026", "n": 37, "rad": 0.0417, "rad_sem": 0.0064, "rad_n": 10, "cpm": 6.3, "cpm_sem": 0.9667, "cpm_n": 10, "voc": 0.0, "voc_sem": 0.0, "voc_n": 25, "aqs": 92.48, "aqs_sem": 0.1306, "aqs_n": 25, "temp": 17.1786, "temp_sem": 0.5517, "temp_n": 28, "hum": 30.0714, "hum_sem": 0.5343, "hum_n": 28, "pres": 1018.4879, "pres_sem": 0.107, "pres_n": 28, "pm1": 5.3929, "pm1_sem": 0.1393, "pm1_n": 28, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "25.03.2026", "n": 14, "rad": 0.0393, "rad_sem": 0.0045, "rad_n": 14, "cpm": 5.9286, "cpm_sem": 0.675, "cpm_n": 14, "voc": 0.0, "voc_sem": 0.0, "voc_n": 12, "aqs": 93.25, "aqs_sem": 4.5612, "aqs_n": 12, "temp": 17.5833, "temp_sem": 0.6332, "temp_n": 12, "hum": 30.75, "hum_sem": 0.9139, "hum_n": 12, "pres": 1008.225, "pres_sem": 0.0479, "pres_n": 12, "pm1": 35.8, "pm1_sem": 3.0, "pm1_n": 2, "pm25": 39.2, "pm25_sem": 3.1, "pm25_n": 2, "pm10": 40.2, "pm10_sem": 3.2, "pm10_n": 2}, {"date": "27.03.2026", "n": 223, "rad": null, "rad_sem": null, "rad_n": 0, "cpm": null, "cpm_sem": null, "cpm_n": 0, "voc": 0.4269, "voc_sem": 0.0122, "voc_n": 223, "aqs": 74.8251, "aqs_sem": 0.416, "aqs_n": 223, "temp": 20.5605, "temp_sem": 0.1756, "temp_n": 223, "hum": 43.9058, "hum_sem": 0.1907, "hum_n": 223, "pres": 1004.8226, "pres_sem": 0.0588, "pres_n": 223, "pm1": 5.5874, "pm1_sem": 0.4715, "pm1_n": 223, "pm25": 7.4081, "pm25_sem": 0.5215, "pm25_n": 223, "pm10": 8.5067, "pm10_sem": 0.5314, "pm10_n": 223}, {"date": "28.03.2026", "n": 162, "rad": null, "rad_sem": null, "rad_n": 0, "cpm": null, "cpm_sem": null, "cpm_n": 0, "voc": 0.2403, "voc_sem": 0.0049, "voc_n": 162, "aqs": 84.7654, "aqs_sem": 0.2869, "aqs_n": 162, "temp": 21.821, "temp_sem": 0.2447, "temp_n": 162, "hum": 44.0617, "hum_sem": 0.2759, "hum_n": 162, "pres": 998.7099, "pres_sem": 0.3034, "pres_n": 162, "pm1": 6.7531, "pm1_sem": 0.2495, "pm1_n": 162, "pm25": 8.5741, "pm25_sem": 0.2742, "pm25_n": 162, "pm10": 9.963, "pm10_sem": 0.2758, "pm10_n": 162}, {"date": "29.03.2026", "n": 72, "rad": null, "rad_sem": null, "rad_n": 0, "cpm": null, "cpm_sem": null, "cpm_n": 0, "voc": 0.1958, "voc_sem": 0.0066, "voc_n": 72, "aqs": 86.7083, "aqs_sem": 0.2863, "aqs_n": 72, "temp": 21.5417, "temp_sem": 0.1169, "temp_n": 72, "hum": 42.0972, "hum_sem": 0.3311, "hum_n": 72, "pres": 995.6943, "pres_sem": 0.0401, "pres_n": 72, "pm1": 4.5278, "pm1_sem": 0.3471, "pm1_n": 72, "pm25": 6.0694, "pm25_sem": 0.3473, "pm25_n": 72, "pm10": 7.6528, "pm10_sem": 0.3387, "pm10_n": 72}, {"date": "30.03.2026", "n": 20, "rad": 0.0375, "rad_sem": 0.0049, "rad_n": 19, "cpm": 5.6579, "cpm_sem": 0.7474, "cpm_n": 19, "voc": 0.0638, "voc_sem": 0.0002, "voc_n": 20, "aqs": 96.0, "aqs_sem": 0.0, "aqs_n": 20, "temp": 22.2, "temp_sem": 0.0918, "temp_n": 20, "hum": 49.5, "hum_sem": 0.2115, "hum_n": 20, "pres": 1015.702, "pres_sem": 0.005, "pres_n": 20, "pm1": 1.9, "pm1_sem": 0.0688, "pm1_n": 20, "pm25": 3.1, "pm25_sem": 0.0688, "pm25_n": 20, "pm10": 4.15, "pm10_sem": 0.0819, "pm10_n": 20}, {"date": "31.03.2026", "n": 181, "rad": 0.0456, "rad_sem": 0.0018, "rad_n": 147, "cpm": 6.8912, "cpm_sem": 0.2778, "cpm_n": 147, "voc": 0.0259, "voc_sem": 0.0047, "voc_n": 179, "aqs": 74.6872, "aqs_sem": 0.8998, "aqs_n": 179, "temp": 15.4785, "temp_sem": 0.3174, "temp_n": 181, "hum": 59.8508, "hum_sem": 0.4985, "hum_n": 181, "pres": 1003.7038, "pres_sem": 0.1743, "pres_n": 181, "pm1": 17.3043, "pm1_sem": 3.4779, "pm1_n": 69, "pm25": 20.6101, "pm25_sem": 4.2126, "pm25_n": 69, "pm10": 22.8261, "pm10_sem": 4.8765, "pm10_n": 69}, {"date": "01.04.2026", "n": 63, "rad": 0.0397, "rad_sem": 0.0023, "rad_n": 62, "cpm": 6.0, "cpm_sem": 0.351, "cpm_n": 62, "voc": 0.5031, "voc_sem": 0.1013, "voc_n": 63, "aqs": 64.3651, "aqs_sem": 1.6078, "aqs_n": 63, "temp": 12.4143, "temp_sem": 0.4434, "temp_n": 63, "hum": 58.0635, "hum_sem": 1.1375, "hum_n": 63, "pres": 1009.6397, "pres_sem": 0.1761, "pres_n": 63, "pm1": 23.3556, "pm1_sem": 3.7015, "pm1_n": 9, "pm25": 26.1556, "pm25_sem": 4.0065, "pm25_n": 9, "pm10": 27.0889, "pm10_sem": 4.055, "pm10_n": 9}, {"date": "06.04.2026", "n": 97, "rad": 0.0409, "rad_sem": 0.002, "rad_n": 97, "cpm": 6.1753, "cpm_sem": 0.3046, "cpm_n": 97, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "07.04.2026", "n": 10, "rad": 0.047, "rad_sem": 0.0068, "rad_n": 10, "cpm": 7.1, "cpm_sem": 1.0269, "cpm_n": 10, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "20.04.2026", "n": 41, "rad": 0.0383, "rad_sem": 0.0025, "rad_n": 38, "cpm": 5.7895, "cpm_sem": 0.3849, "cpm_n": 38, "voc": 0.0033, "voc_sem": 0.0014, "voc_n": 16, "aqs": 95.9375, "aqs_sem": 1.2893, "aqs_n": 16, "temp": 19.3333, "temp_sem": 0.6716, "temp_n": 18, "hum": 38.7222, "hum_sem": 0.6898, "hum_n": 18, "pres": 1005.1483, "pres_sem": 0.0345, "pres_n": 18, "pm1": 11.5125, "pm1_sem": 3.0783, "pm1_n": 8, "pm25": 14.75, "pm25_sem": 3.7034, "pm25_n": 8, "pm10": 17.1, "pm10_sem": 4.3243, "pm10_n": 8}, {"date": "21.04.2026", "n": 13, "rad": 0.0352, "rad_sem": 0.0041, "rad_n": 13, "cpm": 5.3077, "cpm_sem": 0.6138, "cpm_n": 13, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "22.04.2026", "n": 12, "rad": 0.0375, "rad_sem": 0.0031, "rad_n": 12, "cpm": 5.6667, "cpm_sem": 0.466, "cpm_n": 12, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "23.04.2026", "n": 30, "rad": 0.0402, "rad_sem": 0.0025, "rad_n": 30, "cpm": 6.0667, "cpm_sem": 0.3834, "cpm_n": 30, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}, {"date": "27.04.2026", "n": 21, "rad": 0.0427, "rad_sem": 0.0039, "rad_n": 20, "cpm": 6.45, "cpm_sem": 0.5959, "cpm_n": 20, "voc": 0.0034, "voc_sem": 0.0015, "voc_n": 18, "aqs": 98.2778, "aqs_sem": 0.3861, "aqs_n": 18, "temp": 14.3889, "temp_sem": 0.3146, "temp_n": 18, "hum": 30.4444, "hum_sem": 1.4399, "hum_n": 18, "pres": 1019.8539, "pres_sem": 0.0164, "pres_n": 18, "pm1": 1.75, "pm1_sem": 0.1909, "pm1_n": 8, "pm25": 3.325, "pm25_sem": 0.4317, "pm25_n": 8, "pm10": 4.8875, "pm10_sem": 0.6922, "pm10_n": 8}, {"date": "29.04.2026", "n": 1, "rad": null, "rad_sem": null, "rad_n": 0, "cpm": null, "cpm_sem": null, "cpm_n": 0, "voc": null, "voc_sem": null, "voc_n": 0, "aqs": null, "aqs_sem": null, "aqs_n": 0, "temp": null, "temp_sem": null, "temp_n": 0, "hum": null, "hum_sem": null, "hum_n": 0, "pres": null, "pres_sem": null, "pres_n": 0, "pm1": null, "pm1_sem": null, "pm1_n": 0, "pm25": null, "pm25_sem": null, "pm25_n": 0, "pm10": null, "pm10_sem": null, "pm10_n": 0}];
 
 const GPS = [{"lat":47.1559869,"lon":27.6040847,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":96.0,"temp":18.0,"date":"10.03.2026"},{"lat":47.1551703,"lon":27.6040051,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":14.0,"date":"10.03.2026"},{"lat":47.1551428,"lon":27.6040341,"rad":null,"cpm":null,"pm1":6.6,"pm25":8.4,"pm10":9.3,"aqs":91.0,"temp":15.0,"date":"10.03.2026"},{"lat":47.1551832,"lon":27.6039871,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":14.0,"date":"10.03.2026"},{"lat":47.155173,"lon":27.6039951,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":15.0,"date":"10.03.2026"},{"lat":47.1551361,"lon":27.6039896,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":16.0,"date":"10.03.2026"},{"lat":47.1553862,"lon":27.6038634,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":18.0,"date":"10.03.2026"},{"lat":47.1551895,"lon":27.603973,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":14.0,"date":"10.03.2026"},{"lat":47.1551318,"lon":27.6040397,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":13.0,"date":"10.03.2026"},{"lat":47.1555117,"lon":27.6038331,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":19.0,"date":"10.03.2026"},{"lat":47.1554344,"lon":27.6086075,"rad":0.006623,"cpm":1,"pm1":11.5,"pm25":13.4,"pm10":14.6,"aqs":84.0,"temp":20.0,"date":"10.03.2026"},{"lat":47.1558445,"lon":27.6054665,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":22.0,"date":"10.03.2026"},{"lat":47.155928,"lon":27.6041979,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":18.0,"date":"10.03.2026"},{"lat":47.1559773,"lon":27.6054844,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":20.0,"date":"10.03.2026"},{"lat":47.1559437,"lon":27.6055344,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":96.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1555666,"lon":27.6061719,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1555948,"lon":27.6071819,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":98.0,"temp":22.0,"date":"10.03.2026"},{"lat":47.1548211,"lon":27.6112827,"rad":0.031788,"cpm":4,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1558869,"lon":27.6079591,"rad":0.039735,"cpm":6,"pm1":null,"pm25":null,"pm10":null,"aqs":98.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1548112,"lon":27.6103472,"rad":0.013245,"cpm":2,"pm1":14.4,"pm25":16.5,"pm10":17.8,"aqs":80.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1547602,"lon":27.6113052,"rad":0.071523,"cpm":10,"pm1":10.8,"pm25":12.9,"pm10":13.8,"aqs":85.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1547135,"lon":27.6113934,"rad":0.095364,"cpm":14,"pm1":12.5,"pm25":14.6,"pm10":15.7,"aqs":83.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1547176,"lon":27.6113792,"rad":null,"cpm":6,"pm1":9.5,"pm25":11.8,"pm10":13.3,"aqs":87.0,"temp":21.0,"date":"10.03.2026"},{"lat":47.1558469,"lon":27.6044837,"rad":null,"cpm":null,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":18.0,"date":"10.03.2026"},{"lat":47.1550675,"lon":27.6093481,"rad":0.02649,"cpm":4,"pm1":9.9,"pm25":11.6,"pm10":13.0,"aqs":86.0,"temp":20.0,"date":"10.03.2026"},{"lat":47.1543868,"lon":27.6058579,"rad":0.238411,"cpm":36,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":14.0,"date":"11.03.2026"},{"lat":47.1541189,"lon":27.6069967,"rad":0.066225,"cpm":10,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":14.0,"date":"11.03.2026"},{"lat":47.1538422,"lon":27.6081496,"rad":0.059603,"cpm":9,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":15.0,"date":"11.03.2026"},{"lat":47.1536618,"lon":27.6093649,"rad":0.019868,"cpm":3,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":15.0,"date":"11.03.2026"},{"lat":47.1534679,"lon":27.6105475,"rad":0.039735,"cpm":6,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":16.0,"date":"11.03.2026"},{"lat":47.1533503,"lon":27.614339,"rad":null,"cpm":null,"pm1":8.2,"pm25":10.1,"pm10":11.2,"aqs":89.0,"temp":19.0,"date":"11.03.2026"},{"lat":47.1533675,"lon":27.6137567,"rad":0.046358,"cpm":7,"pm1":10.3,"pm25":12.2,"pm10":13.4,"aqs":86.0,"temp":20.0,"date":"11.03.2026"},{"lat":47.1532162,"lon":27.6141652,"rad":null,"cpm":null,"pm1":8.0,"pm25":9.9,"pm10":10.9,"aqs":89.0,"temp":20.0,"date":"11.03.2026"},{"lat":47.1530651,"lon":27.6130263,"rad":0.033113,"cpm":5,"pm1":8.6,"pm25":10.2,"pm10":11.3,"aqs":88.0,"temp":18.0,"date":"11.03.2026"},{"lat":47.1533127,"lon":27.6118008,"rad":0.02649,"cpm":4,"pm1":8.2,"pm25":10.1,"pm10":11.2,"aqs":89.0,"temp":17.0,"date":"11.03.2026"},{"lat":47.1533174,"lon":27.6144134,"rad":0.039735,"cpm":6,"pm1":20.0,"pm25":22.7,"pm10":24.1,"aqs":75.0,"temp":11.0,"date":"12.03.2026"},{"lat":47.1533042,"lon":27.6142948,"rad":0.039735,"cpm":6,"pm1":30.8,"pm25":34.3,"pm10":36.4,"aqs":64.0,"temp":11.0,"date":"12.03.2026"},{"lat":47.1598952,"lon":27.6139534,"rad":0.039735,"cpm":6,"pm1":31.0,"pm25":34.8,"pm10":37.3,"aqs":63.0,"temp":17.0,"date":"12.03.2026"},{"lat":47.1600508,"lon":27.6131644,"rad":0.006623,"cpm":1,"pm1":46.5,"pm25":51.6,"pm10":54.0,"aqs":51.0,"temp":17.0,"date":"12.03.2026"},{"lat":47.1611576,"lon":27.609375,"rad":0.046358,"cpm":7,"pm1":59.4,"pm25":65.8,"pm10":68.4,"aqs":42.0,"temp":16.0,"date":"12.03.2026"},{"lat":47.1557731,"lon":27.5986953,"rad":0.02649,"cpm":4,"pm1":6.3,"pm25":7.9,"pm10":8.8,"aqs":91.0,"temp":15.0,"date":"12.03.2026"},{"lat":47.1533561,"lon":27.6144333,"rad":0.019868,"cpm":3,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":21.0,"date":"15.03.2026"},{"lat":47.1533561,"lon":27.6144333,"rad":0.046358,"cpm":7,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":22.0,"date":"15.03.2026"},{"lat":47.1533561,"lon":27.6144333,"rad":0.059603,"cpm":9,"pm1":null,"pm25":null,"pm10":null,"aqs":99.0,"temp":23.0,"date":"15.03.2026"},{"lat":47.1534042,"lon":27.6139969,"rad":null,"cpm":null,"pm1":22.9,"pm25":25.7,"pm10":26.6,"aqs":72.0,"temp":20.0,"date":"16.03.2026"},{"lat":47.1530013,"lon":27.6132355,"rad":null,"cpm":null,"pm1":21.7,"pm25":24.4,"pm10":25.1,"aqs":73.0,"temp":18.0,"date":"16.03.2026"},{"lat":47.1553682,"lon":27.6001567,"rad":null,"cpm":null,"pm1":38.4,"pm25":42.5,"pm10":43.7,"aqs":57.0,"temp":8.0,"date":"16.03.2026"},{"lat":47.1536168,"lon":27.6097123,"rad":0.05298,"cpm":8,"pm1":null,"pm25":null,"pm10":null,"aqs":100.0,"temp":18.0,"date":"25.03.2026"},{"lat":47.1533612,"lon":27.6142733,"rad":0.039735,"cpm":6,"pm1":32.8,"pm25":36.1,"pm10":37.0,"aqs":62.0,"temp":21.0,"date":"25.03.2026"},{"lat":47.1530643,"lon":27.6133147,"rad":0.046358,"cpm":7,"pm1":38.8,"pm25":42.3,"pm10":43.4,"aqs":57.0,"temp":21.0,"date":"25.03.2026"},{"lat":47.1568524,"lon":27.6052037,"rad":0.07947,"cpm":12,"pm1":239.6,"pm25":293.7,"pm10":342.5,"aqs":0.0,"temp":25.4,"date":"31.03.2026"},{"lat":47.1568022,"lon":27.60533,"rad":0.05298,"cpm":8,"pm1":18.4,"pm25":21.4,"pm10":23.1,"aqs":75.0,"temp":25.0,"date":"31.03.2026"},{"lat":47.1564095,"lon":27.6052979,"rad":0.059603,"cpm":9,"pm1":18.3,"pm25":21.9,"pm10":23.8,"aqs":75.0,"temp":23.6,"date":"31.03.2026"},{"lat":47.1553066,"lon":27.6033592,"rad":0.059603,"cpm":9,"pm1":null,"pm25":null,"pm10":null,"aqs":85.0,"temp":20.4,"date":"31.03.2026"},{"lat":47.155305,"lon":27.603359,"rad":0.033113,"cpm":5,"pm1":9.9,"pm25":11.7,"pm10":12.5,"aqs":85.0,"temp":20.9,"date":"31.03.2026"},{"lat":47.1578337,"lon":27.5965422,"rad":0.07947,"cpm":12,"pm1":null,"pm25":null,"pm10":null,"aqs":67.0,"temp":14.6,"date":"31.03.2026"},{"lat":47.1570592,"lon":27.5874022,"rad":0.092715,"cpm":14,"pm1":30.6,"pm25":33.8,"pm10":34.9,"aqs":63.0,"temp":12.4,"date":"31.03.2026"},{"lat":47.1574251,"lon":27.5915442,"rad":0.0,"cpm":0,"pm1":36.2,"pm25":40.3,"pm10":42.6,"aqs":58.0,"temp":13.0,"date":"31.03.2026"},{"lat":47.1568119,"lon":27.5911016,"rad":0.059603,"cpm":9,"pm1":34.1,"pm25":37.5,"pm10":38.3,"aqs":59.0,"temp":13.0,"date":"31.03.2026"},{"lat":47.1561235,"lon":27.5874065,"rad":0.125828,"cpm":19,"pm1":null,"pm25":null,"pm10":null,"aqs":57.0,"temp":13.6,"date":"31.03.2026"},{"lat":47.1572067,"lon":27.5880206,"rad":0.059603,"cpm":9,"pm1":28.4,"pm25":31.9,"pm10":33.4,"aqs":65.0,"temp":12.2,"date":"31.03.2026"},{"lat":47.1576954,"lon":27.5877931,"rad":0.05298,"cpm":8,"pm1":23.8,"pm25":26.2,"pm10":27.6,"aqs":70.0,"temp":12.1,"date":"31.03.2026"},{"lat":47.1624302,"lon":27.5837369,"rad":0.099338,"cpm":15,"pm1":31.1,"pm25":35.5,"pm10":38.1,"aqs":62.0,"temp":11.2,"date":"31.03.2026"},{"lat":47.1620568,"lon":27.5853709,"rad":0.05298,"cpm":8,"pm1":27.7,"pm25":32.6,"pm10":36.3,"aqs":66.0,"temp":10.9,"date":"31.03.2026"},{"lat":47.1590303,"lon":27.5870284,"rad":0.125828,"cpm":19,"pm1":null,"pm25":null,"pm10":null,"aqs":69.0,"temp":12.4,"date":"31.03.2026"},{"lat":47.1606682,"lon":27.5894765,"rad":0.086093,"cpm":13,"pm1":27.5,"pm25":31.8,"pm10":34.1,"aqs":66.0,"temp":11.0,"date":"31.03.2026"},{"lat":47.1603632,"lon":27.5896144,"rad":0.059603,"cpm":9,"pm1":25.7,"pm25":29.8,"pm10":32.4,"aqs":68.0,"temp":11.0,"date":"31.03.2026"},{"lat":47.1568952,"lon":27.5927949,"rad":0.046358,"cpm":7,"pm1":23.0,"pm25":26.0,"pm10":28.0,"aqs":71.0,"temp":10.0,"date":"31.03.2026"},{"lat":47.1574736,"lon":27.594286,"rad":0.05298,"cpm":8,"pm1":24.5,"pm25":28.0,"pm10":30.5,"aqs":69.0,"temp":10.0,"date":"31.03.2026"},{"lat":47.1571753,"lon":27.5955162,"rad":0.039735,"cpm":6,"pm1":21.2,"pm25":24.1,"pm10":26.2,"aqs":72.0,"temp":9.9,"date":"31.03.2026"},{"lat":47.1567735,"lon":27.5965262,"rad":0.02649,"cpm":4,"pm1":15.9,"pm25":18.3,"pm10":19.2,"aqs":78.0,"temp":9.9,"date":"31.03.2026"},{"lat":47.1564323,"lon":27.597298,"rad":0.006623,"cpm":1,"pm1":22.5,"pm25":25.3,"pm10":26.5,"aqs":71.0,"temp":9.9,"date":"31.03.2026"},{"lat":47.1564587,"lon":27.6051281,"rad":0.046358,"cpm":7,"pm1":24.9,"pm25":27.6,"pm10":28.7,"aqs":69.0,"temp":21.4,"date":"31.03.2026"},{"lat":47.1562588,"lon":27.6045932,"rad":0.033113,"cpm":5,"pm1":29.0,"pm25":31.8,"pm10":32.8,"aqs":64.0,"temp":19.6,"date":"31.03.2026"},{"lat":47.1566615,"lon":27.6037303,"rad":0.046358,"cpm":7,"pm1":24.3,"pm25":26.9,"pm10":27.8,"aqs":69.0,"temp":17.6,"date":"31.03.2026"},{"lat":47.1569802,"lon":27.6027705,"rad":0.05298,"cpm":8,"pm1":25.0,"pm25":27.8,"pm10":29.0,"aqs":68.0,"temp":16.9,"date":"31.03.2026"},{"lat":47.157357,"lon":27.6022628,"rad":0.072848,"cpm":11,"pm1":25.4,"pm25":28.1,"pm10":29.1,"aqs":68.0,"temp":16.1,"date":"31.03.2026"},{"lat":47.1615284,"lon":27.5858423,"rad":0.05298,"cpm":8,"pm1":26.0,"pm25":29.5,"pm10":31.4,"aqs":68.0,"temp":10.7,"date":"31.03.2026"},{"lat":47.1596275,"lon":27.60434,"rad":0.02649,"cpm":4,"pm1":null,"pm25":null,"pm10":null,"aqs":62.0,"temp":8.7,"date":"01.04.2026"},{"lat":47.1638785,"lon":27.6056069,"rad":0.013245,"cpm":2,"pm1":35.0,"pm25":38.2,"pm10":39.4,"aqs":59.0,"temp":8.3,"date":"01.04.2026"},{"lat":47.1641817,"lon":27.6059611,"rad":0.046358,"cpm":7,"pm1":null,"pm25":null,"pm10":null,"aqs":70.0,"temp":8.5,"date":"01.04.2026"},{"lat":47.1554195,"lon":27.6058576,"rad":0.066225,"cpm":10,"pm1":null,"pm25":null,"pm10":null,"aqs":70.0,"temp":14.3,"date":"01.04.2026"},{"lat":47.1554358,"lon":27.6058552,"rad":0.072848,"cpm":11,"pm1":null,"pm25":null,"pm10":null,"aqs":70.0,"temp":15.1,"date":"01.04.2026"},{"lat":47.155217,"lon":27.6058564,"rad":0.02649,"cpm":4,"pm1":25.1,"pm25":27.8,"pm10":28.5,"aqs":68.0,"temp":10.1,"date":"01.04.2026"},{"lat":47.1550415,"lon":27.6054288,"rad":0.033113,"cpm":5,"pm1":34.0,"pm25":38.0,"pm10":38.0,"aqs":60.0,"temp":9.2,"date":"01.04.2026"},{"lat":47.1666079,"lon":27.6184269,"rad":0.059603,"cpm":9,"pm1":null,"pm25":null,"pm10":null,"aqs":57.0,"temp":9.3,"date":"01.04.2026"},{"lat":47.1565061,"lon":27.6036429,"rad":0.059603,"cpm":9,"pm1":null,"pm25":null,"pm10":null,"aqs":57.0,"temp":9.2,"date":"01.04.2026"},{"lat":47.1586309,"lon":27.6015382,"rad":0.039735,"cpm":6,"pm1":41.4,"pm25":46.1,"pm10":48.0,"aqs":54.0,"temp":8.7,"date":"01.04.2026"},{"lat":47.1553161,"lon":27.6058339,"rad":0.02649,"cpm":4,"pm1":13.7,"pm25":15.8,"pm10":16.8,"aqs":60.0,"temp":18.4,"date":"01.04.2026"},{"lat":47.1549815,"lon":27.605365,"rad":0.046358,"cpm":7,"pm1":15.2,"pm25":17.4,"pm10":18.4,"aqs":74.0,"temp":18.5,"date":"01.04.2026"},{"lat":47.1553305,"lon":27.6058448,"rad":0.05298,"cpm":8,"pm1":19.0,"pm25":21.0,"pm10":22.0,"aqs":47.0,"temp":18.4,"date":"01.04.2026"},{"lat":47.1562837,"lon":27.6039745,"rad":0.086093,"cpm":13,"pm1":null,"pm25":null,"pm10":null,"aqs":88.0,"temp":10.9,"date":"01.04.2026"},{"lat":47.1533653,"lon":27.6049178,"rad":0.039735,"cpm":6,"pm1":9.4,"pm25":11.4,"pm10":12.1,"aqs":53.0,"temp":14.4,"date":"01.04.2026"},{"lat":47.1533174,"lon":27.6144134,"rad":null,"cpm":null,"pm1":11.9,"pm25":15.2,"pm10":17.9,"aqs":83.0,"temp":23.0,"date":"20.04.2026"},{"lat":47.1533039,"lon":27.6144446,"rad":0.019868,"cpm":3,"pm1":9.7,"pm25":12.4,"pm10":14.6,"aqs":87.0,"temp":23.0,"date":"20.04.2026"},{"lat":47.1532568,"lon":27.613942,"rad":0.033113,"cpm":5,"pm1":5.5,"pm25":7.4,"pm10":8.3,"aqs":93.0,"temp":22.0,"date":"20.04.2026"},{"lat":47.1544214,"lon":27.6061005,"rad":0.039735,"cpm":6,"pm1":1.4,"pm25":2.9,"pm10":4.4,"aqs":98.0,"temp":15.0,"date":"27.04.2026"},{"lat":47.1539887,"lon":27.607116,"rad":0.039735,"cpm":6,"pm1":2.3,"pm25":4.3,"pm10":5.9,"aqs":96.0,"temp":15.0,"date":"27.04.2026"},{"lat":47.1554722,"lon":27.5999795,"rad":0.039735,"cpm":6,"pm1":2.3,"pm25":5.9,"pm10":9.4,"aqs":94.0,"temp":13.0,"date":"27.04.2026"},{"lat":47.1555862,"lon":27.6001118,"rad":0.02649,"cpm":4,"pm1":1.0,"pm25":2.4,"pm10":3.8,"aqs":98.0,"temp":13.0,"date":"27.04.2026"},{"lat":47.1555673,"lon":27.6000767,"rad":0.019868,"cpm":3,"pm1":1.0,"pm25":2.1,"pm10":3.6,"aqs":98.0,"temp":13.0,"date":"27.04.2026"}];
 
@@ -691,6 +739,192 @@ function setMapLayer(layer) {
 
 renderMap('rad');
 
+
+// ═══════════════════════════════════════════════════════════
+// SEM ENVELOPE CHART
+// ═══════════════════════════════════════════════════════════
+const SEM_META = {
+  rad:  { label:'Radiație (μSv/h)',  color:'#00d4ff', nKey:'rad_n',  unit:'μSv/h',  min: null, max: null },
+  voc:  { label:'VOC (ppm)',         color:'#ff4d6d', nKey:'voc_n',  unit:'ppm',    min: null, max: null },
+  aqs:  { label:'AQS (scor)',        color:'#00ff9a', nKey:'aqs_n',  unit:'',       min: 0,    max: 110  },
+  temp: { label:'Temperatură (°C)',  color:'#ffb830', nKey:'temp_n', unit:'°C',     min: null, max: null },
+  hum:  { label:'Umiditate (%)',     color:'#3b82f6', nKey:'hum_n',  unit:'%',      min: 0,    max: 105  },
+  pres: { label:'Presiune (mbar)',   color:'#a78bfa', nKey:'pres_n', unit:'mbar',   min: null, max: null },
+  pm25: { label:'PM2.5 (μg/m³)',    color:'#ffb830', nKey:'pm25_n', unit:'μg/m³',  min: 0,    max: null },
+  pm10: { label:'PM10 (μg/m³)',     color:'#ff4d6d', nKey:'pm10_n', unit:'μg/m³',  min: 0,    max: null },
+};
+
+let semChartInst = null;
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function renderSemChart(metric) {
+  const meta   = SEM_META[metric];
+  const color  = meta.color;
+  const nKey   = meta.nKey;
+  const days   = DAILY.filter(d => d[metric] != null);
+  const labels = days.map(d => d.date.substring(0,5));
+  const means  = days.map(d => d[metric]);
+  const sems   = days.map(d => d[`${metric}_sem`] ?? 0);
+  const ns     = days.map(d => d[nKey] ?? 0);
+  const upper  = means.map((v,i) => +(v + sems[i]).toFixed(5));
+  const lower  = means.map((v,i) => Math.max(0, +(v - sems[i]).toFixed(5)));
+
+  // Update button states
+  document.querySelectorAll('#sem-metric-btns .map-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sem === metric);
+  });
+
+  // Destroy previous chart if exists
+  if (semChartInst) { semChartInst.destroy(); semChartInst = null; }
+
+  const ctx = document.getElementById('chart-sem-env').getContext('2d');
+
+  const bandColor  = hexToRgba(color, 0.18);  // soft shadow
+  const lineColor  = color;
+  const pointColor = color;
+
+  semChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        // Dataset 0: upper bound — fill DOWN to dataset 1 (lower)
+        {
+          label: '__upper',
+          data: upper,
+          fill: '+1',
+          backgroundColor: bandColor,
+          borderColor: 'transparent',
+          borderWidth: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          tension: 0.4,
+          spanGaps: true,
+        },
+        // Dataset 1: lower bound
+        {
+          label: '__lower',
+          data: lower,
+          fill: false,
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          borderWidth: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          tension: 0.4,
+          spanGaps: true,
+        },
+        // Dataset 2: mean line — ON TOP of envelope
+        {
+          label: meta.label,
+          data: means,
+          fill: false,
+          borderColor: lineColor,
+          backgroundColor: hexToRgba(color, 0.06),
+          borderWidth: 2.5,
+          pointRadius: days.map((d,i) => {
+            // Larger point = larger SEM (more uncertainty)
+            const semRelative = sems[i] / (Math.max(...sems) || 1);
+            return 4 + semRelative * 5;
+          }),
+          pointHoverRadius: 10,
+          pointBackgroundColor: days.map((d,i) => {
+            const n = ns[i];
+            // Darker point if fewer measurements (higher uncertainty)
+            const brightness = Math.min(1, n / 50);
+            return hexToRgba(color, 0.4 + brightness * 0.6);
+          }),
+          pointBorderColor: lineColor,
+          pointBorderWidth: 1.5,
+          tension: 0.4,
+          spanGaps: true,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500, easing: 'easeInOutQuart' },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            filter: item => !item.text.startsWith('__'),
+            color: '#5a7a9a',
+            font: { family: 'DM Mono', size: 11 },
+          }
+        },
+        tooltip: {
+          backgroundColor: '#111d2e',
+          borderColor: '#1e3050',
+          borderWidth: 1,
+          titleColor: color,
+          bodyColor: '#c8daf0',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont:  { family: 'DM Mono', size: 11 },
+          padding: 12,
+          filter: item => item.datasetIndex === 2,  // only show mean line tooltip
+          callbacks: {
+            title: items => `📅 ${days[items[0].dataIndex].date}`,
+            label: ctx => {
+              const i = ctx.dataIndex;
+              return `  Medie: ${means[i].toFixed(4)} ${meta.unit}`;
+            },
+            afterLabel: ctx => {
+              const i = ctx.dataIndex;
+              const sem = sems[i], n = ns[i];
+              const lines = [
+                `  ±SEM:  ${sem.toFixed(4)} ${meta.unit}`,
+                `  n:     ${n} măsurători`,
+              ];
+              if (sem > 0 && means[i] > 0) {
+                const cv = (sem / means[i] * 100).toFixed(1);
+                lines.push(`  CV%:   ${cv}%`);
+              }
+              return lines;
+            },
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color:'#5a7a9a', font:{family:'DM Mono', size:10}, maxRotation:45 },
+          grid:  { color:'rgba(30,48,80,0.4)' },
+          border:{ color:'#1e3050' },
+        },
+        y: {
+          min: meta.min ?? undefined,
+          max: meta.max ?? undefined,
+          ticks: { color:'#5a7a9a', font:{family:'DM Mono', size:10} },
+          grid:  { color:'rgba(30,48,80,0.4)' },
+          border:{ color:'#1e3050' },
+          title: { display:true, text: `${meta.label}`, color:'#5a7a9a', font:{size:10, family:'DM Mono'} },
+        }
+      }
+    }
+  });
+
+  // ── Stats row sub-chart ─────────────────────────────────────────
+  const maxSem = Math.max(...sems);
+  const statsDiv = document.getElementById('sem-stats-row');
+  const overallMean = means.reduce((a,b)=>a+b,0)/means.length;
+  const semMean = sems.reduce((a,b)=>a+b,0)/sems.length;
+  const dayMaxSem = days[sems.indexOf(maxSem)];
+  const dayMinN   = days[ns.indexOf(Math.min(...ns.filter(n=>n>0)))];
+
+  statsDiv.innerHTML = `
+    <span>📊 <strong style="color:${color}">${means.length}</strong> zile cu date</span>
+    <span>⌀ medie globală: <strong style="color:${color}">${overallMean.toFixed(4)} ${meta.unit}</strong></span>
+    <span>⌀ SEM mediu: <strong style="color:#f59e0b">${semMean.toFixed(4)} ${meta.unit}</strong></span>
+    <span>⚠ SEM maxim: <strong style="color:#ff4d6d">${maxSem.toFixed(4)}</strong> în ${dayMaxSem?.date}</span>
+    <span>📉 n minim: <strong style="color:#ff4d6d">${Math.min(...ns.filter(n=>n>0))}</strong> în ${dayMinN?.date}</span>
+  `;
+}
+
 // ═══════════════════════════════════════════════════════════
 // TIMELINE
 // ═══════════════════════════════════════════════════════════
@@ -770,6 +1004,248 @@ function initTimeline() {
       borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.08)',
       borderWidth:2, pointRadius:5, tension:0.3, fill:true, spanGaps:true }]
   },{ scales:{y:{...CJ.scales.y, min:990, max:1030}} });
+
+  // SEM Envelope — render default metric when panel opens
+  renderSemChart('rad');
+
+  // Box Plot — render default metric when panel opens
+  renderBoxPlot('rad');
+}
+
+// ═══════════════════════════════════════════════════════════
+// BOX PLOT
+// ═══════════════════════════════════════════════════════════
+const BOX_META = {
+  rad:  { label:'Radiație (μSv/h)', color:'#00d4ff', unit:'μSv/h', dec:5 },
+  cpm:  { label:'CPM',              color:'#22d3ee', unit:'cpm',   dec:1 },
+  pm25: { label:'PM2.5 (μg/m³)',   color:'#ffb830', unit:'μg/m³', dec:1 },
+  pm10: { label:'PM10 (μg/m³)',    color:'#ff4d6d', unit:'μg/m³', dec:1 },
+  pm1:  { label:'PM1 (μg/m³)',     color:'#a78bfa', unit:'μg/m³', dec:1 },
+  aqs:  { label:'AQS (scor)',       color:'#00ff9a', unit:'',      dec:0 },
+  temp: { label:'Temperatură (°C)', color:'#f97316', unit:'°C',    dec:1 },
+};
+
+function boxStats(arr) {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length;
+  const q1  = s[Math.floor(n * 0.25)];
+  const med = n % 2 === 0 ? (s[n/2 - 1] + s[n/2]) / 2 : s[Math.floor(n/2)];
+  const q3  = s[Math.floor(n * 0.75)];
+  const iqr = q3 - q1;
+  const fence = 1.5 * iqr;
+  // whisker ends: nearest real value within fences
+  const wLow  = s.find(v => v >= q1 - fence) ?? s[0];
+  const wHigh = [...s].reverse().find(v => v <= q3 + fence) ?? s[n-1];
+  const outliers = s.filter(v => v < wLow || v > wHigh);
+  return { min: s[0], max: s[n-1], q1, med, q3, wLow, wHigh, outliers, n };
+}
+
+function renderBoxPlot(metric) {
+  const meta = BOX_META[metric];
+
+  // Update button states
+  document.querySelectorAll('#box-metric-btns .map-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.box === metric);
+  });
+
+  // Group individual GPS readings by date for this metric
+  const byDate = {};
+  GPS.forEach(pt => {
+    const v = pt[metric];
+    if (v == null) return;
+    const d = pt.date;
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(v);
+  });
+
+  const dates = Object.keys(byDate).sort((a, b) => {
+    const parse = s => { const [d,m,y] = s.split('.'); return new Date(+y, +m-1, +d); };
+    return parse(a) - parse(b);
+  });
+
+  if (!dates.length) {
+    document.getElementById('box-stats-row').innerHTML =
+      `<span style="color:var(--accent-red)">Nu există date GPS individuale pentru acest parametru.</span>`;
+    return;
+  }
+
+  const stats = dates.map(d => ({ date: d, ...boxStats(byDate[d]) }));
+
+  // ── Canvas sizing ────────────────────────────────────────
+  const padL = 58, padR = 24, padT = 22, padB = 56;
+  const boxW   = Math.max(28, Math.min(56, 54));
+  const colW   = Math.max(boxW + 16, 70);
+  const totalW = Math.max(padL + padR + dates.length * colW, 500);
+  const totalH = 360;
+
+  const canvas = document.getElementById('chart-boxplot');
+  canvas.width  = totalW;
+  canvas.height = totalH;
+  canvas.style.width  = totalW + 'px';
+  canvas.style.height = totalH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, totalW, totalH);
+
+  // ── Value range ──────────────────────────────────────────
+  const allVals = stats.flatMap(s => [s.wLow, s.wHigh, ...s.outliers]);
+  let yMin = Math.min(...allVals);
+  let yMax = Math.max(...allVals);
+  const pad = (yMax - yMin) * 0.12 || 0.01;
+  yMin -= pad; yMax += pad;
+
+  function yPos(v) {
+    return padT + (totalH - padT - padB) * (1 - (v - yMin) / (yMax - yMin));
+  }
+  function xCenter(i) {
+    return padL + colW * i + colW / 2;
+  }
+
+  // Hex → rgb components helper
+  function hexRgb(hex) {
+    return [
+      parseInt(hex.slice(1,3), 16),
+      parseInt(hex.slice(3,5), 16),
+      parseInt(hex.slice(5,7), 16)
+    ];
+  }
+  const [R, G, B] = hexRgb(meta.color);
+
+  // ── Grid lines + Y axis labels ───────────────────────────
+  ctx.font = '10px DM Mono';
+  const nGrid = 5;
+  for (let i = 0; i <= nGrid; i++) {
+    const v = yMin + (yMax - yMin) * i / nGrid;
+    const y = yPos(v);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(totalW - padR, y);
+    ctx.strokeStyle = 'rgba(30,48,80,0.4)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#5a7a9a';
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(meta.dec), padL - 6, y + 4);
+  }
+
+  // ── Y axis border ────────────────────────────────────────
+  ctx.beginPath();
+  ctx.moveTo(padL, padT);
+  ctx.lineTo(padL, totalH - padB);
+  ctx.strokeStyle = '#1e3050';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ── Draw one box per day ─────────────────────────────────
+  stats.forEach((s, i) => {
+    const cx   = xCenter(i);
+    const half = boxW / 2;
+
+    const yQ1    = yPos(s.q1);
+    const yQ3    = yPos(s.q3);
+    const yMed   = yPos(s.med);
+    const yWLow  = yPos(s.wLow);
+    const yWHigh = yPos(s.wHigh);
+
+    // IQR box — fill
+    ctx.fillStyle = `rgba(${R},${G},${B},0.18)`;
+    ctx.fillRect(cx - half, yQ3, boxW, yQ1 - yQ3);
+
+    // IQR box — stroke
+    ctx.strokeStyle = `rgba(${R},${G},${B},0.85)`;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(cx - half, yQ3, boxW, yQ1 - yQ3);
+
+    // Median line
+    ctx.beginPath();
+    ctx.moveTo(cx - half, yMed);
+    ctx.lineTo(cx + half, yMed);
+    ctx.strokeStyle = meta.color;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Upper whisker line (Q3 → wHigh)
+    ctx.beginPath();
+    ctx.moveTo(cx, yQ3);
+    ctx.lineTo(cx, yWHigh);
+    ctx.strokeStyle = `rgba(${R},${G},${B},0.65)`;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // top cap
+    ctx.beginPath();
+    ctx.moveTo(cx - half * 0.4, yWHigh);
+    ctx.lineTo(cx + half * 0.4, yWHigh);
+    ctx.strokeStyle = `rgba(${R},${G},${B},0.85)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Lower whisker line (Q1 → wLow)
+    ctx.beginPath();
+    ctx.moveTo(cx, yQ1);
+    ctx.lineTo(cx, yWLow);
+    ctx.strokeStyle = `rgba(${R},${G},${B},0.65)`;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // bottom cap
+    ctx.beginPath();
+    ctx.moveTo(cx - half * 0.4, yWLow);
+    ctx.lineTo(cx + half * 0.4, yWLow);
+    ctx.strokeStyle = `rgba(${R},${G},${B},0.85)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Outlier dots
+    s.outliers.forEach(v => {
+      const yO = yPos(v);
+      ctx.beginPath();
+      ctx.arc(cx, yO, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${R},${G},${B},0.65)`;
+      ctx.fill();
+      ctx.strokeStyle = meta.color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // X label — date, rotated
+    ctx.save();
+    ctx.translate(cx, totalH - padB + 12);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = '#5a7a9a';
+    ctx.font = '9px DM Mono';
+    ctx.textAlign = 'right';
+    ctx.fillText(s.date.substring(0, 5), 0, 0);
+    ctx.restore();
+
+    // n= label below date
+    ctx.fillStyle = 'rgba(90,122,154,0.7)';
+    ctx.font = '8px DM Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('n=' + s.n, cx, totalH - padB + 38);
+  });
+
+  // ── Stats summary row ────────────────────────────────────
+  const allMeds  = stats.map(s => s.med).sort((a,b)=>a-b);
+  const globMed  = allMeds[Math.floor(allMeds.length / 2)];
+  const totalN   = stats.reduce((acc, s) => acc + s.n, 0);
+  const totOut   = stats.reduce((acc, s) => acc + s.outliers.length, 0);
+  const maxOut   = stats.reduce((best, s) => s.outliers.length > (best?.outliers.length ?? -1) ? s : best, null);
+  const widestIQR = stats.reduce((best, s) => (s.q3-s.q1) > ((best?.q3-best?.q1) ?? -1) ? s : best, null);
+
+  document.getElementById('box-stats-row').innerHTML = `
+    <span>📦 <strong style="color:${meta.color}">${stats.length}</strong> zile cu date</span>
+    <span>📍 total puncte GPS: <strong style="color:${meta.color}">${totalN}</strong></span>
+    <span>⌀ mediană globală: <strong style="color:${meta.color}">${globMed.toFixed(meta.dec)} ${meta.unit}</strong></span>
+    <span>⚠ outlieri total: <strong style="color:#ff4d6d">${totOut}</strong></span>
+    ${maxOut && maxOut.outliers.length > 0
+      ? `<span>max outlieri/zi: <strong style="color:#ff4d6d">${maxOut.outliers.length}</strong> în ${maxOut.date}</span>` : ''}
+    ${widestIQR
+      ? `<span>IQR maxim: <strong style="color:#ffb830">${(widestIQR.q3-widestIQR.q1).toFixed(meta.dec)}</strong> în ${widestIQR.date}</span>` : ''}
+  `;
 }
 
 // ═══════════════════════════════════════════════════════════
